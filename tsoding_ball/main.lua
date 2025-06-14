@@ -4,7 +4,7 @@ local xvel, yvel = 200, 200
 local gravity = 1E3
 local radius = 100
 function love.draw()
-	love.graphics.setColor(255, 0, 0, 255)
+	love.graphics.setBackgroundColor(9/255, 9/255, 9/255, 255/255)
 	local dt = love.timer.getDelta()
 	yvel = yvel + gravity * dt
 	local x = xpos + xvel * dt
@@ -19,5 +19,6 @@ function love.draw()
 	else
 		ypos = y
 	end
+	love.graphics.setColor(230/255, 41/255, 55/255, 255/255)
 	love.graphics.circle("fill", xpos, ypos, radius)
 end
