@@ -1,0 +1,17 @@
+#ifdef GL_ES
+	precision mediump float;
+#endif
+
+#define love_MaxCanvases gl_MaxDrawBuffers
+
+#if __VERSION__ >= 130
+	#define varying in
+	layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
+	#define love_PixelColor love_Canvases[0]
+#else
+	#define love_Canvases gl_FragData
+	#define love_PixelColor gl_FragColor
+#endif
+
+// See Shader::updateScreenParams in Shader.cpp.
+#define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))

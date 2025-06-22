@@ -1,0 +1,5 @@
+void setPointSize() {
+#ifdef GL_ES
+	gl_PointSize = love_PointSize;
+#endif
+}

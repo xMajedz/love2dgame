@@ -1,0 +1,4 @@
+uniform ArrayImage MainTex;
+void effect() {
+	love_PixelColor = Texel(MainTex, VaryingTexCoord.xyz) * VaryingColor;
+}

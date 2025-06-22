@@ -1,0 +1,9 @@
+uniform sampler2D MainTex;
+varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
+
+vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
+
+void main() {
+	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
+}

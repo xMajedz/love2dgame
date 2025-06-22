@@ -1,0 +1,3 @@
+void effect() {
+	love_PixelColor = VideoTexel(VaryingTexCoord.xy) * VaryingColor;
+}

@@ -1,0 +1,14 @@
+// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
+// but we can't guarantee that highp is always supported in fragment shaders...
+// We *really* don't want to use mediump for these in vertex shaders though.
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ViewSpaceFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromView;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP mat3 ViewNormalFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
+
+// Compatibility
+#define TransformMatrix ViewSpaceFromLocal
+#define ProjectionMatrix ClipSpaceFromView
+#define TransformProjectionMatrix ClipSpaceFromLocal
+#define NormalMatrix ViewNormalFromLocal

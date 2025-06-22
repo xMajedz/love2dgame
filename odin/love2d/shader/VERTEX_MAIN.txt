@@ -1,0 +1,16 @@
+attribute vec4 VertexPosition;
+attribute vec4 VertexTexCoord;
+attribute vec4 VertexColor;
+attribute vec4 ConstantColor;
+
+varying vec4 VaryingTexCoord;
+varying vec4 VaryingColor;
+
+vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
+
+void main() {
+	VaryingTexCoord = VertexTexCoord;
+	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
+	setPointSize();
+	love_Position = position(ClipSpaceFromLocal, VertexPosition);
+}

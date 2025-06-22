@@ -1,0 +1,30 @@
+#if !defined(GL_ES) && __VERSION__ < 140
+	#define lowp
+	#define mediump
+	#define highp
+#endif
+#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
+	#define LOVE_HIGHP_OR_MEDIUMP highp
+#else
+	#define LOVE_HIGHP_OR_MEDIUMP mediump
+#endif
+#define number float
+#define Image sampler2D
+#define ArrayImage sampler2DArray
+#define CubeImage samplerCube
+#define VolumeImage sampler3D
+#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
+	#define DepthImage sampler2DShadow
+	#define DepthArrayImage sampler2DArrayShadow
+	#define DepthCubeImage samplerCubeShadow
+#endif
+#define extern uniform
+#ifdef GL_EXT_texture_array
+#extension GL_EXT_texture_array : enable
+#endif
+#ifdef GL_OES_texture_3D
+#extension GL_OES_texture_3D : enable
+#endif
+#ifdef GL_OES_standard_derivatives
+#extension GL_OES_standard_derivatives : enable
+#endif

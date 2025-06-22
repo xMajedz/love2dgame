@@ -1,0 +1,14 @@
+#define love_Position gl_Position
+
+#if __VERSION__ >= 130
+	#define attribute in
+	#define varying out
+	#ifndef LOVE_GLSL1_ON_GLSL3
+		#define love_VertexID gl_VertexID
+		#define love_InstanceID gl_InstanceID
+	#endif
+#endif
+
+#ifdef GL_ES
+	uniform mediump float love_PointSize;
+#endif
