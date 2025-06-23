@@ -1,13 +1,11 @@
 package main
 
-import love "love2d/scene"
 import "love2d/boot"
-import "love2d/common"
-import "love2d/timer"
 import "love2d/graphics"
+import math "love2d/mathf"
+import love "love2d/scene"
 
 import "core:fmt"
-import "core:strings"
 
 w, h, x, y, xpos, ypos, xvel, yvel, radius, gravity: f32	
 points: i32
@@ -39,14 +37,16 @@ main :: proc () {
 	}
 	
 	love.draw = proc () {
-		graphics.setBackgroundColor(9.00/255.00, 9.00/255.00, 9.00/255.00, 255.00/255.00)
-		graphics.setColor(230.00/255.00, 41.00/255.00, 55.00/255.00, 255.00/255.00)
+		graphics.setBackgroundColor(math.colorFromBytes(9, 9, 9, 255))
+		graphics.setColor(math.colorFromBytes(230, 41, 55, 255))
 		graphics.circle("fill", xpos, ypos, radius, points)
 	}
 
-	config := boot.Config {}
-	config.WindowWidth = 1600
-	config.WindowHeight = 900
+	config := boot.Config {
+		WindowTitle = "tsoding ball",
+		WindowWidth = 1600,
+		WindowHeight = 900,
+	}
 
 	boot.run(config, love.new())
 }

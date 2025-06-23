@@ -1,6 +1,7 @@
 package love2d_dll
 
 import "core:c"
+import "core:fmt"
 
 when ODIN_OS == .Linux do foreign import wrap_love_dll "love.so"
 
@@ -58,22 +59,25 @@ ImageData :: struct {
 	pixel: Pixel,
 }
 
-Object :: struct {}
-
-Joystick :: struct {}
-
 Quad :: struct {
 	viewport: struct { x, y, w, h: c.double }
 }
 
 WrapString :: struct {
-	data: ^cstring
+	data: ^cstring,
 }
 
 WrapSequenceString :: struct {
 	len: c.int,
 	sequence: ^pchar,
 }
+
+
+Object :: struct ($T: typeid) { ptr: ^T }
+
+RandomGenerator :: struct { ptr: rawptr }
+
+Joystick :: struct { ptr: rawptr }
 
 @(link_prefix="wrap_love_dll_")
 foreign wrap_love_dll {
@@ -90,9 +94,11 @@ foreign wrap_love_dll {
 
 	last_error :: proc(out_errormsg: ^WrapString) ---
 	//Object *p
-	release_obj :: proc(p: ^Object) ---
+	//retain_obj :: proc(p: ^Object) ---
+	retain_obj :: proc(p: rawptr) ---
 	//Object *p
-	retain_obj :: proc(p: ^Object) ---
+	//release_obj :: proc(p: ^Object) ---
+	release_obj :: proc(p: rawptr) ---
 	//void *p
 	delete :: proc(ptr: rawptr) ---
 	//void *p
@@ -118,6 +124,21 @@ foreign wrap_love_dll {
 	math_noise_3 :: proc(x, y, z: c.float, out_result: ^c.float) ---
 	//float x, float y, float z, float w, float *out_result
 	math_noise_4 :: proc(x, y, z, w: c.float, out_result: ^c.float) ---
+
+	//RandomGenerator** out_RandomGenerator
+	math_newRandomGenerator :: proc (out_rg: rawptr) -> bool4 ---
+	//RandomGenerator* rng, double *out_result
+	type_RandomGenerator_random :: proc (rg: rawptr, out_result: ^c.double) ---
+	//RandomGenerator* rng, double stddev, double mean, double *out_result
+	type_RandomGenerator_randomNormal :: proc (rg: rawptr, stddve, mean: c.double, out_result: ^c.double) ---
+	//RandomGenerator *rng, uint32 low, uint32 high
+	type_RandomGenerator_setSeed :: proc (rg: rawptr, low, high: c.uint) -> bool4 ---
+	//RandomGenerator *rng, uint32 *out_low, uint32 *out_high
+	type_RandomGenerator_getSeed :: proc (rg: rawptr, out_low, out_high: ^c.uint) ---
+	//RandomGenerator *rng, const char *state
+	type_RandomGenerator_setState :: proc (rg: rawptr, state: pchar) -> bool4 ---
+	//RandomGenerator *rng, WrapString **out_str
+	type_RandomGenerator_getState :: proc (rg: rawptr, out_str: ^WrapString) ---
 
 	graphics_open_love_graphics :: proc() -> bool4 ---
 	//ImageDataBase **imageDataList, bool4* compressedTypeList, int imageDataListLength, bool4 flagMipmaps, bool4 flagLinear, love::graphics::Image** out_image
@@ -320,4 +341,29 @@ foreign wrap_love_dll {
 		out_float_value: ^c.float,
 		out_joystick: ^Joystick
 	) ---
+}
+
+retain :: proc ($T: typeid, obj: T) {
+	retain_obj(obj.ptr)
+}
+
+release :: proc ($T: typeid, obj: T) {
+	release_obj(obj.ptr)
+	obj.ptr = nil
+}
+
+
+newObject :: proc($T: typeid, ptr: rawptr) -> ^T {
+	if nil == ptr { return nil }
+
+	obj := new(T)
+	obj.ptr = ptr
+
+	return obj
+}
+
+newRandomGenerator :: proc () -> ^RandomGenerator {
+	out_rg: rawptr = nil
+	math_newRandomGenerator(&out_rg)
+	return newObject(RandomGenerator, out_rg)
 }

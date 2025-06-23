@@ -2,6 +2,7 @@ package boot
 
 import "../common"
 import "../scene"
+import "../mathf"
 import "../timer"
 import "../window"
 import "../graphics"
@@ -50,15 +51,15 @@ newConfig :: proc() -> Config {
 	}
 }
 
-init :: proc(config: Config) {
+init :: proc(cfg: Config) {
 	if initFlag == false {
 		initFlag = true
-		cfg := config
-		if (config == Config{}) {
-			cfg = newConfig()
-		}
 
-		//mathf.init()
+		if cfg.DefaultRandomSeed != 0 {
+			mathf.init(cfg.DefaultRandomSeed)
+		} else {
+			mathf.init()
+		}
 
 		//filesystem.init("")
 
@@ -94,11 +95,11 @@ init :: proc(config: Config) {
                 settings.Centered = cfg.WindowCentered
                 settings.Display = cfg.WindowDisplay
                 settings.HighDPI = cfg.WindowHighDPI
+
                 if cfg.WindowX != 0 { settings.X = cfg.WindowX }
                 if cfg.WindowY != 0 { settings.Y = cfg.WindowY }
-                window.setMode(cfg.WindowWidth, cfg.WindowHeight, settings)
 
-                //filesystem.setSource(environment.currentDirectory);
+                window.setMode(cfg.WindowWidth, cfg.WindowHeight, settings)
 	}
 }
 

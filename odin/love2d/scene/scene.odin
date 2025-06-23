@@ -77,17 +77,17 @@ Scene :: struct {
 	invokeQuit: proc (),
 }
 
+invoke_param :: proc ($T: typeid, p: proc(param: T), param: T) {
+	if p != nil { p(param) }
+}
+
+invoke_no_param :: proc (p: proc()) {
+	if p != nil { p() }
+}
+
+invoke :: proc {invoke_no_param, invoke_param}
+
 new :: proc() -> Scene {
-	invoke_param :: proc ($T: typeid, p: proc(param: T), param: T) {
-		if p != nil { p(param) }
-	}
-
-	invoke_no_param :: proc (p: proc()) {
-		if p != nil { p() }
-	}
-
-	invoke :: proc {invoke_no_param, invoke_param}
-
 	return Scene {
 		KeyPressed = keyPressed,
 		KeyReleased = keyReleased,
