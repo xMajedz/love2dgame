@@ -75,3 +75,10 @@ colorFromBytes_rgb :: proc (r, g, b: int) -> (c.float, c.float, c.float) {
 }
 
 colorFromBytes :: proc {colorFromBytes_rgb, colorFromBytes_rgba}
+
+close :: proc () {
+	rg.release(rg)
+	rg.ptr = nil
+	free(rg)
+	rg = nil
+}

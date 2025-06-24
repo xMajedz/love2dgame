@@ -2,23 +2,21 @@ package shader
 
 import love2d_dll ".."
 
-import "core:os"
 import "core:strings"
 import "core:fmt"
+import "core:os"
+
+Tuple :: love2d_dll.Tuple
 
 GLSL_VERSION := make(map[string]string)
 GLSL_MAP := make(map[string]string)
 
 GLSL_SYNTAX ,GLSL_UNIFORMS, GLSL_FUNCTIONS :string
 
-VERTEX_SHADER, FRAGMENT_SHADER: string
-
 DEFAULTCODE_VERTEX: string
 DEFAULTCODE_PIXEL: string
 DEFAULTCODE_VIDEOPIXEL: string
 DEFAULTCODE_ARRAYPIXEL: string
-
-Tuple :: struct($First, $Second: typeid) { first: First, second: Second }
 
 read_file :: proc (file_path: string) -> string {
 	data, OK := os.read_entire_file(file_path)
@@ -28,33 +26,34 @@ read_file :: proc (file_path: string) -> string {
 	return cast(string)data
 }
 
+read_shader :: proc (shader: string) -> string {
+	return read_file(strings.join([]string{"love2d/shader/", shader, ".txt"}, ""))
+}
+
 init_GLSL :: proc () {
 	GLSL_VERSION["glsl1,F"] = "#version 120"
 	GLSL_VERSION["glsl1,T"] = "#version 100"
 	GLSL_VERSION["glsl3,F"] = "#version 330 core"
 	GLSL_VERSION["glsl3,T"] = "#version 300 es"
 	
-	VERTEX_SHADER = read_file("love2d/shader/VERTEX_SHADER.txt")
-	FRAGMENT_SHADER = read_file("love2d/shader/FRAGMENT_SHADER.txt")
+	GLSL_SYNTAX = read_shader("GLSL_SYNTAX")
+	GLSL_UNIFORMS = read_shader("GLSL_UNIFORMS")
+	GLSL_FUNCTIONS = read_shader("GLSL_FUNCTIONS")
 
-	GLSL_SYNTAX = read_file("love2d/shader/GLSL_SYNTAX.txt")
-	GLSL_UNIFORMS = read_file("love2d/shader/GLSL_UNIFORMS.txt")
-	GLSL_FUNCTIONS = read_file("love2d/shader/GLSL_FUNCTIONS.txt")
+	GLSL_MAP["VERTEX_HEADER"] = read_shader("VERTEX_HEADER")
+	GLSL_MAP["VERTEX_FUNCTIONS"] = read_shader("VERTEX_FUNCTIONS")
+	GLSL_MAP["VERTEX_MAIN"] = read_shader("VERTEX_MAIN")
 
-	GLSL_MAP["VERTEX_HEADER"] = read_file("love2d/shader/VERTEX_HEADER.txt")
-	GLSL_MAP["VERTEX_FUNCTIONS"] = read_file("love2d/shader/VERTEX_FUNCTIONS.txt")
-	GLSL_MAP["VERTEX_MAIN"] = read_file("love2d/shader/VERTEX_MAIN.txt")
+	GLSL_MAP["PIXEL_HEADER"] = read_shader("PIXEL_HEADER")
+	GLSL_MAP["PIXEL_FUNCTIONS"] = read_shader("PIXEL_FUNCTIONS")
+	GLSL_MAP["PIXEL_MAIN"] = read_shader("PIXEL_MAIN")
 
-	GLSL_MAP["PIXEL_HEADER"] = read_file("love2d/shader/PIXEL_HEADER.txt")
-	GLSL_MAP["PIXEL_FUNCTIONS"] = read_file("love2d/shader/PIXEL_FUNCTIONS.txt")
-	GLSL_MAP["PIXEL_MAIN"] = read_file("love2d/shader/PIXEL_MAIN.txt")
+	GLSL_MAP["PIXEL_MAIN_CUSTOM"] = read_shader("PIXEL_MAIN_CUSTOM")
 
-	GLSL_MAP["PIXEL_MAIN_CUSTOM"] = read_file("love2d/shader/PIXEL_MAIN_CUSTOM.txt")
-
-	DEFAULTCODE_VERTEX = read_file("love2d/shader/DEFAULTCODE_VERTEX.txt")
-	DEFAULTCODE_PIXEL = read_file("love2d/shader/DEFAULTCODE_PIXEL.txt")
-	DEFAULTCODE_VIDEOPIXEL = read_file("love2d/shader/DEFAULTCODE_VIDEOPIXEL.txt")
-	DEFAULTCODE_ARRAYPIXEL = read_file("love2d/shader/DEFAULTCODE_ARRAYPIXEL.txt")
+	DEFAULTCODE_VERTEX = read_shader("DEFAULTCODE_VERTEX")
+	DEFAULTCODE_PIXEL = read_shader("DEFAULTCODE_PIXEL")
+	DEFAULTCODE_VIDEOPIXEL = read_shader("DEFAULTCODE_VIDEOPIXEL")
+	DEFAULTCODE_ARRAYPIXEL = read_shader("DEFAULTCODE_ARRAYPIXEL")
 }
 
 createStageCode :: proc (stage, code, lang: string, gles, glsl1on3, gamma_correct, custom: bool) -> string {
@@ -111,7 +110,7 @@ init :: proc () {
 				gamma,
 				false
 			)
-			index = index + 1
+			index += 1
 			code[index] = createStageCode(
 				"PIXEL",
 				DEFAULTCODE_PIXEL,
@@ -121,7 +120,7 @@ init :: proc () {
 				gamma,
 				false
 			)
-			index = index + 1
+			index += 1
 			code[index] = createStageCode(
 				"PIXEL",
 				DEFAULTCODE_VIDEOPIXEL,
@@ -131,7 +130,7 @@ init :: proc () {
 				gamma,
 				true
 			)
-			index = index + 1
+			index += 1
 			code[index] = createStageCode(
 				"PIXEL",
 				DEFAULTCODE_ARRAYPIXEL,
@@ -141,7 +140,7 @@ init :: proc () {
 				gamma,
 				true
 			)
-			index = index + 1
+			index += 1
 		}
 	}
 
@@ -149,5 +148,10 @@ init :: proc () {
 	for str, idx in code {
 		shader_code[idx] = strings.clone_to_cstring(code[idx])
 	}
+
 	love2d_dll.graphics_setDefaultShaderCode(shader_code[:])
+
+	delete(GLSL_VERSION)
+	delete(GLSL_MAP)
+	delete(lang_map)
 }

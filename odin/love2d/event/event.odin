@@ -756,7 +756,7 @@ newQueueBox :: proc () -> QueueBox {
 			#partial switch e.type {
 				case Type.Unknow:
 				case Type.Quit:
-					//scene.invokeQuit()
+					scene.invokeQuit()
 					quit()
 				case:
 			}
