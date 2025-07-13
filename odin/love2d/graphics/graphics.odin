@@ -55,7 +55,7 @@ print_default:: proc (
 	length: c.int,
 	x, y, angle, sx, sy, ox, oy, kx, ky: c.float
 	) {
-	love2d_dll.graphics_print(text[:], color[:], c.float(length), x, y, angle, sx, sy, ox, oy, kx, ky)
+	love2d_dll.graphics_print(text[:], color[:], c.int(length), x, y, angle, sx, sy, ox, oy, kx, ky)
 }
 
 print :: proc {print_default, print_text, print_text_xy}

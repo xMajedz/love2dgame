@@ -40,7 +40,6 @@ main :: proc () {
 		graphics.setBackgroundColor(math.colorFromBytes(9, 9, 9, 255))
 		graphics.setColor(math.colorFromBytes(230, 41, 55, 255))
 		graphics.circle("fill", xpos, ypos, radius, points)
-		graphics.print("hellope!")
 	}
 
 	config := boot.Config {
