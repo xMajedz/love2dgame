@@ -2,5 +2,8 @@
 it's a learning/expermenting project so don't expect quality code.
 WARNING memory managment is non existing in the code
 ```
+odin run hello.odin -file
+```
+```
 odin run tsoding_ball.odin -file
 ```
