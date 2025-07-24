@@ -42,11 +42,7 @@ DefaultConfig :: Config {
 	DefaultRandomSeed = 0,
 }
 
-newConfig :: proc() -> Config {
-	return DefaultConfig
-}
-
-BootInit :: proc(config: Config)
+bootInit :: proc(config: Config)
 {
 	if !boot_init_flag {
 		cfg := config
@@ -100,79 +96,56 @@ BootInit :: proc(config: Config)
 	}
 }
 
-
-genScene :: proc () -> Scene
-{
-	return Scene {}
-}
-
-stepConfig :: struct
-{
-	genScene: type_of(genScene),
-}
-
-BootStepScene :: proc (scene: Scene)
+bootStepScene :: proc (scene: ^Scene)
 {
 	MouseSetPreviousPosition(MouseGetX(), MouseGetY())
 
 	EventPoll()
 
 	TimerStep()
-	MouseStep()
-	//KeyboardStep()
-	//JoystickStep()
-	//FPScounterStep()
 
 	MouseSetScroll(EventGetScrollValue())
 
 	EventHandleScene(scene)
 }
 
-BootStepConfig :: proc (config: stepConfig)
+bootStepNoScene :: proc ()
 {
-	cfg := config
-	cfg.genScene = genScene
-	BootStepScene(cfg.genScene())
+	scene: Scene = NoScene
+	bootStepScene(&scene)
 }
 
-BootStepDefault :: proc ()
-{
-	BootStepScene(NoScene)
-}
+bootStep :: proc {bootStepNoScene, bootStepScene}
 
-BootStep :: proc {BootStepDefault, BootStepConfig, BootStepScene}
-
-BootShouldQuit :: proc () -> bool
+bootShouldQuit :: proc () -> bool
 {
 	return quit_event_flag
 }
 
-BootQuit :: proc ()
+bootQuit :: proc ()
 {
 	EventQuit()
 }
 
-BootShutdown :: proc ()
+bootShutdown :: proc ()
 {
 	MathClose()
 }
 
-BootLoop :: proc (config: Config, scene: Scene)
+bootLoop :: proc (config: Config, scene: ^Scene)
 {
-	scene.invokeLoad()
+	SceneInvokeLoad(scene)
 
-	TimerStep()
+	for !bootShouldQuit() {
+		bootStep(scene)
 
-	for !BootShouldQuit() {
-		BootStep(scene)
-
-		scene.invokeUpdate(TimerGetDelta())
+		SceneInvokeUpdate(scene, TimerGetDelta())
 
 		if GraphicsIsActive() {
 			GraphicsClear(GraphicsGetBackgroundColor())
 			GraphicsOrigin()
 
-			scene.invokeDraw()
+			SceneInvokeDraw(scene)
 
 			GraphicsPresent()
 			
@@ -185,19 +158,18 @@ BootLoop :: proc (config: Config, scene: Scene)
 		}
 	}
 
-	BootShutdown()
+	bootShutdown()
 }
 
-BootDefault :: proc (config: Config, scene: Scene)
+bootDefault :: proc (config: Config, scene: ^Scene)
 {
-	BootInit(config)
-	BootLoop(config, scene)
+	bootInit(config)
+	bootLoop(config, scene)
 }
 
-BootScene :: proc (scene: Scene)
+bootScene :: proc (scene: ^Scene)
 {
-	config: Config = newConfig()
-	BootDefault(config, scene)
+	bootDefault(DefaultConfig, scene)
 }
 
-Boot :: proc {BootDefault, BootScene}
+boot :: proc {bootDefault, bootScene}

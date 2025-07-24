@@ -9,6 +9,6 @@ draw :: proc ()
 
 main :: proc ()
 {
-	love2d.draw = draw
-	love2d.Boot(love2d.GenScene())
+	scene: love2d.Scene = { draw = draw }
+	love2d.boot(&scene)
 }

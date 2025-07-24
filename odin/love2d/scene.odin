@@ -1,55 +1,10 @@
 package love2d
 
-keyPressed: proc ()
-keyReleased: proc ()
-mouseMoved:  proc ()
-mousePressed: proc ()
-mouseReleased: proc ()
-mouseFocus: proc ()
-wheelMoved: proc ()
-joystickPressed: proc ()
-joystickReleased: proc ()
-joystickAxis: proc ()
-joystickHat: proc ()
-joystickGamepadPressed: proc ()
-joystickGamepadReleased: proc ()
-joystickGamepadAxis: proc ()
-joystickAdded: proc ()
-joystickRemoved: proc ()
-touchMoved: proc ()
-touchPressed: proc ()
-touchReleased: proc ()
-textEditing: proc ()
-textInput: proc ()
-windowFocus: proc ()
-windowVisible: proc ()
-windowResize: proc ()
-directoryDropped: proc ()
-fileDropped: proc ()
-lowMemory: proc ()
-quit: proc ()
-
-load: proc ()
-update: proc (dt: f32)
-draw: proc ()
-
-invoke_param :: proc ($T: typeid, p: proc(param: T), param: T)
-{
-	if p != nil { p(param) }
-}
-
-invoke_no_param :: proc (p: proc())
-{
-	if p != nil { p() }
-}
-
-invoke :: proc {invoke_no_param, invoke_param}
-
 Scene :: struct
 {
-	keyPressed: type_of(keyPressed),
-	keyReleased: proc (),
-	mouseMoved: proc (),
+	keyPressed: proc (key: KeyConstant, code: Scancode, repeat: bool),
+	keyReleased: proc (key: KeyConstant, code: Scancode),
+	mouseMoved:  proc (),
 	mousePressed: proc (),
 	mouseReleased: proc (),
 	mouseFocus: proc (),
@@ -66,109 +21,154 @@ Scene :: struct
 	touchMoved: proc (),
 	touchPressed: proc (),
 	touchReleased: proc (),
-	textEditng: proc (),
+	textEditing: proc (),
 	textInput: proc (),
 	windowFocus: proc (),
 	windowVisible: proc (),
 	windowResize: proc (),
 	directoryDropped: proc (),
 	fileDropped: proc (),
-	quit: proc (),
 	lowMemory: proc (),
+	quit: proc (),
+
 	load: proc (),
 	update: proc (dt: f32),
 	draw: proc (),
-
-	invokeLoad: proc (),
-	invokeUpdate: proc (dt: f32),
-	invokeDraw: proc (),
-	invokeQuit: proc (),
 }
 
 NoScene :: Scene {}
 
-RefScene: ^Scene
-
-NewScene :: proc() -> ^Scene
+SceneInvokeKeyPressed :: proc (scene: ^Scene, key: KeyConstant, code: Scancode, repeat: bool)
 {
-	RefScene.keyPressed = keyPressed
-	RefScene.keyReleased = keyReleased
-	RefScene.mouseMoved = mouseMoved
-	RefScene.mousePressed = mousePressed
-	RefScene.mouseReleased = mouseReleased
-	RefScene.mouseFocus = mouseFocus
-	RefScene.wheelMoved = wheelMoved
-	RefScene.joystickPressed = joystickPressed
-	RefScene.joystickReleased = joystickReleased
-	RefScene.joystickAxis = joystickAxis
-	RefScene.joystickHat = joystickHat
-	RefScene.joystickGamepadPressed = joystickGamepadPressed
-	RefScene.joystickGamepadReleased = joystickGamepadReleased
-	RefScene.joystickGamepadAxis = joystickGamepadAxis
-	RefScene.joystickAdded = joystickAdded
-	RefScene.joystickRemoved = joystickRemoved
-	RefScene.touchMoved = touchMoved
-	RefScene.touchPressed = touchPressed
-	RefScene.touchReleased = touchReleased
-	RefScene.textEditng = textEditing
-	RefScene.textInput = textInput
-	RefScene.windowFocus = windowFocus
-	RefScene.windowVisible = windowVisible
-	RefScene.windowResize = windowResize
-	RefScene.directoryDropped = directoryDropped
-	RefScene.fileDropped = fileDropped
-	RefScene.quit = quit
-	RefScene.lowMemory = lowMemory
-	RefScene.load = load
-	RefScene.update = update
-	RefScene.draw = draw
-
-	RefScene.invokeLoad = proc () { invoke(load) }
-	RefScene.invokeUpdate = proc (dt: f32) { invoke(f32, update, dt) }
-	RefScene.invokeDraw = proc () { invoke(draw) }
-	RefScene.invokeQuit = proc () { invoke(quit) }
-
-	return RefScene
+	if scene != nil && scene.keyPressed != nil { scene.keyPressed(key, code, repeat) }
 }
 
-GenScene :: proc() -> Scene
+SceneInvokeKeyReleased :: proc (scene: ^Scene, key: KeyConstant, code: Scancode)
 {
-	return Scene {
-		keyPressed = keyPressed,
-		keyReleased = keyReleased,
-		mouseMoved = mouseMoved,
-		mousePressed = mousePressed,
-		mouseReleased = mouseReleased,
-		mouseFocus = mouseFocus,
-		wheelMoved = wheelMoved,
-		joystickPressed = joystickPressed,
-		joystickReleased = joystickReleased,
-		joystickAxis = joystickAxis,
-		joystickHat = joystickHat,
-		joystickGamepadPressed = joystickGamepadPressed,
-		joystickGamepadReleased = joystickGamepadReleased,
-		joystickGamepadAxis = joystickGamepadAxis,
-		joystickAdded = joystickAdded,
-		joystickRemoved = joystickRemoved,
-		touchMoved = touchMoved,
-		touchPressed = touchPressed,
-		touchReleased = touchReleased,
-		textEditng = textEditing,
-		textInput = textInput,
-		windowFocus = windowFocus,
-		windowVisible = windowVisible,
-		windowResize = windowResize,
-		directoryDropped = directoryDropped,
-		fileDropped = fileDropped,
-		quit = quit,
-		lowMemory = lowMemory,
-		load = load,
-		update = update,
-		draw = draw,
+	if scene != nil && scene.keyReleased != nil { scene.keyReleased(key, code) }
+}
 
-		invokeLoad = proc () { invoke(load) },
-		invokeUpdate = proc (dt: f32) { invoke(f32, update, dt) },
-		invokeDraw = proc () { invoke(draw) },
-		invokeQuit = proc () { invoke(quit) }
-	}
+SceneInvokeMouseMoved ::  proc (scene: ^Scene)
+{
+	if scene != nil && scene.mouseMoved != nil { scene.mouseMoved() }
+}
+
+SceneInvokeMousePressed :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.mousePressed != nil { scene.mousePressed() }
+}
+
+SceneInvokeMouseReleased :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.mouseReleased != nil { scene.mouseReleased() }
+}
+
+SceneInvokeMouseFocus :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.mouseFocus != nil { scene.mouseFocus() }
+}
+
+SceneInvokeWheelMoved :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.wheelMoved != nil { scene.wheelMoved() }
+}
+
+SceneInvokeJoystickPressed :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickReleased :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickAxis :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickHat :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickGamepadPressed :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickGamepadReleased :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickGamepadAxis :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickAdded :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeJoystickRemoved :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeTouchMoved :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeTouchPressed :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeTouchReleased :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeTextEditing :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeTextInput :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeWindowFocus :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeWindowVisible :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeWindowResize :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeDirectoryDropped :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeFileDropped :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeLowMemory :: proc (scene: ^Scene)
+{
+}
+
+SceneInvokeQuit :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.quit != nil { scene.quit() }
+}
+	
+SceneInvokeLoad :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.load != nil { scene.load() }
+}
+
+SceneInvokeUpdate :: proc (scene: ^Scene, dt: f32)
+{
+	if scene != nil && scene.update != nil { scene.update(dt) }
+}
+
+SceneInvokeDraw :: proc (scene: ^Scene)
+{
+	if scene != nil && scene.draw != nil { scene.draw() }
 }

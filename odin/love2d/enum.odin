@@ -558,6 +558,49 @@ EventType :: enum
 	LowMemory,
 }
 
+GamepadButton :: enum
+{
+	A = 1,
+	B,
+	X,
+	Y,
+	Back,
+	Guide,
+	Start,
+	LeftStick,
+	RightStick,
+	LeftShoulder,
+	RightShoulder,
+	DPadUp,
+	DPadDown,
+	DPadLeft,
+	DPadRight,
+}
+
+GamepadAxis :: enum
+{
+	LeftX = 1,
+	LeftY,
+	RightX,
+	RightY,
+	TriggerLeft,
+	TriggerRight,
+}
+
+JoystickHat :: enum 
+{
+	Centered = 1,
+	Up,
+	Right,
+	Down,
+	Left,
+	RightUp,
+	RightDown,
+	LeftUp,
+	LeftDown,
+}
+
+
 FullscreenType :: enum
 {
 	Execlusive,

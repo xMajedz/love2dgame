@@ -3,7 +3,7 @@ package main
 import "love2d"
 
 w, h, x, y, xpos, ypos, xvel, yvel, radius, gravity: f32	
-points: i32
+
 load :: proc ()
 {
 	w, h = 1600, 900
@@ -11,7 +11,6 @@ load :: proc ()
 	xvel, yvel = 200, 200
 	gravity = 1E3
 	radius = 100
-	points = 32
 }
 
 update :: proc (dt: f32)
@@ -35,21 +34,22 @@ draw :: proc ()
 {
 	love2d.GraphicsSetBackgroundColor(love2d.MathColorFromBytes(9, 9, 9, 255))
 	love2d.GraphicsSetColor(love2d.MathColorFromBytes(230, 41, 55, 255))
-	love2d.GraphicsCircle("fill", xpos, ypos, radius, points)
+	love2d.GraphicsCircle("fill", xpos, ypos, radius, 32)
 }
 
 main :: proc ()
 {
-	love2d.load = load
-	love2d.update = update
-	love2d.draw = draw
-
-	config := love2d.Config {
+	config: love2d.Config = {
 		WindowTitle = "tsoding ball",
 		WindowWidth = 1600,
 		WindowHeight = 900,
 	}
 
+	scene: love2d.Scene = {
+		load = load,
+		update = update,
+		draw = draw,
+	}
 
-	love2d.Boot(config, love2d.GenScene())
+	love2d.boot(config, &scene)
 }

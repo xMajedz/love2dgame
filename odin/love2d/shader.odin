@@ -116,9 +116,8 @@ ShaderInit :: proc ()
 		index: int = 0
 		for gamma in gamma_correct {
 			for idx in lang_idx {
-				lang := lang_map[idx]
-				target := lang.first
-				gles := lang.second
+				target, gles := tuple_unpack(lang_map[idx])
+
 				code[index] = ShaderCreateStageCode(
 					"VERTEX",
 					DEFAULTCODE_VERTEX,

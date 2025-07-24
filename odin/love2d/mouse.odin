@@ -1,8 +1,6 @@
 package love2d
 
-rememberButtonCount :: 32
-lastButtonDown := make([]bool, rememberButtonCount)
-currentButtonDown := make([]bool, rememberButtonCount)
+import "core:fmt"
 
 previousX, previousY: f32
 scrollX, scrollY: i32 
@@ -10,14 +8,6 @@ scrollX, scrollY: i32
 MouseInit :: proc () -> bool
 {
 	return cast(bool)open_love_mouse()
-}
-
-MouseStep :: proc ()
-{
-	for i := 0; i < rememberButtonCount; i += 1 {
-		lastButtonDown[i] = currentButtonDown[i]
-		currentButtonDown[i] = MouseIsDown(i)
-	}
 }
 
 MouseSetPreviousPosition :: proc (x, y: f32)

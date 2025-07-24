@@ -31,15 +31,15 @@ GraphicsClear :: proc {GraphicsClear_rgba}
 
 GraphicsPrint_text :: proc (text: cstring)
 {
-	GraphicsPrint_default([]cstring{text}, []Color{{1.00, 1.00, 1.00, 1.00}}, 1, 0, 0)
+	GraphicsPrint_default([]cstring{text}, []Float4{Colorf{1.00, 1.00, 1.00, 1.00}}, 1, 0, 0)
 }
 
 GraphicsPrint_text_xy :: proc (text: cstring, x, y: f32)
 {
-	GraphicsPrint_default([]cstring{text}, []Color{{1.00, 1.00, 1.00, 1.00}}, 1, x, y)
+	GraphicsPrint_default([]cstring{text}, []Float4{Colorf{1.00, 1.00, 1.00, 1.00}}, 1, x, y)
 }
 
-GraphicsPrint_default:: proc (textList: []cstring, colorList: []Color, length: i32, x, y: f32)
+GraphicsPrint_default:: proc (textList: []cstring, colorList: []Float4, length: i32, x, y: f32)
 {
 	graphics_print(&textList[0], &colorList[0], length, x, y, 0, 1, 1, 0, 0, 0, 0)
 }

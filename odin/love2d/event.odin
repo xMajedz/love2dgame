@@ -1,7 +1,6 @@
 package love2d
 
 import "core:c"
-import "core:fmt"
 
 quit_event_flag: bool
 
@@ -10,37 +9,15 @@ EventData :: struct
 	type: EventType, 
 	key: KeyConstant,
 	scancode: Scancode,
-	//joystick = null;
-	//direction = JoystickHat.Centered;
-	//gamepadButton = GamepadButton.A;
-	//gamepadAxis = GamepadAxis.LeftX;
-	text: string,
+	text: cstring,
 	flag: bool,
 	fx, fy, fz, fw, fp: f32,
 	idx, idy, lid: i32,
-}
 
-newEventData :: proc (t: EventType) -> EventData
-{
-	return EventData {
-		type = t,
-		key = KeyConstant.Unknown,
-		scancode = Scancode.Unknow,
-		//joystick = null,
-		//direction = JoystickHat.Centered,
-		//gamepadButton = GamepadButton.A,
-		//gamepadAxis = GamepadAxis.LeftX,
-		//text = null,
-		flag = false,
-		fx = 0,
-		fy = 0,
-		fz = 0,
-		fw = 0,
-		fp = 0,
-		idx = 0,
-		idy = 0,
-		lid = 0,
-	}
+	joystick: Joystick,
+	direction: JoystickHat,
+	gamepadButton: GamepadButton,
+	gamepadAxis: GamepadAxis,
 }
 
 EventInit :: proc () -> bool
@@ -56,7 +33,7 @@ EventQuit :: proc ()
 
 EventQueue :: struct
 {
-	list: ^LinkedList,
+	list: ^LinkedList(EventData),
 
 	has_event, down_or_up, bool: bool,
 
@@ -70,10 +47,10 @@ EventQueue :: struct
 	joystick: Joystick,
 	str: WrapString,
 	joystick_ptr: i32,
+
+	scroll_x, scroll_y: i32,
 }
 
-//KeyPressed: proc (key: KeyConstant, scancode: Scancode, repeat: bool),
-//KeyReleased: proc (key: KeyConstant , scancode: Scancode),
 //MousePressed: proc (x, y: f32, button: i32, touch: bool),
 //MouseReleased: proc (x, y: f32, button: i32, touch: bool),
 //MouseFocus: proc (focus: bool),
@@ -99,84 +76,82 @@ EventQueue :: struct
 //DirectoryDropped: proc (path: string),
 //FileDropped: proc (filePath: string),
 
-//LowMemory: proc (),
-//Quit: proc (),
-
 eq_ptr: ^EventQueue
 
-eq_KeyPressed :: proc (eq: ^EventQueue, key: KeyConstant, scancode: Scancode, repeat: bool)
+eq_GetScrollValue :: proc (eq: ^EventQueue) -> (i32, i32)
 {
-	node := new(Node)
-	node.data = newEventData(EventType.KeyPressed)
-	node.data.key = key
-	node.data.scancode = scancode
-	node.data.flag = repeat
-	
-	list_insert(eq.list, node)
+	return eq.scroll_x, eq.scroll_y
 }
 
-eq_KeyReleased :: proc (eq: ^EventQueue, key: KeyConstant, scancode: Scancode)
+eq_HandleScene :: proc (eq: ^EventQueue, scene: ^Scene)
 {
-	node := new(Node)
-	node.data = newEventData(EventType.KeyReleased)
-	node.data.key = key
-	node.data.scancode = scancode
+	defer eq_Destroy(eq)
 
-	list_insert(eq.list, node)
-}
-
-eq_MousePressed :: proc (eq: ^EventQueue, x, y: f32, button: i32, touch: bool)
-{
-	node := new(Node)
-	node.data.fx = x
-	node.data.fy = y
-	node.data.idx = button
-	node.data.flag = touch
-
-	list_insert(eq.list, node)
-}
-
-eq_MouseReleased :: proc (eq: ^EventQueue, x, y: f32, button: i32, touch: bool)
-{
-	node := new(Node)
-	node.data.fx = x
-	node.data.fy = y
-	node.data.idx = button
-	node.data.flag = touch
-
-	list_insert(eq.list, node)
-}
-
-eq_Quit :: proc (eq: ^EventQueue)
-{
-	node := new(Node)
-	node.data = newEventData(EventType.Quit)
-
-        list_insert(eq.list, node)
-}
-
-eq_getScrollValue :: proc (eq: ^EventQueue) -> (i32, i32)
-{
-	x, y : i32 = 0, 0
-	return x, y
-}
-
-eq_HandleScene :: proc (eq: ^EventQueue, scene: Scene)
-{
 	for 0 < eq.list.count {
-		e := eq.list.head.data
-		#partial switch e.type {
-			case EventType.Unknow:
-			case EventType.Quit:
-				scene.invokeQuit()
-				EventQuit()
-			case:
+		e: EventData = eq.list.head.data
+		switch e.type {
+		case EventType.KeyPressed:
+			SceneInvokeKeyPressed(scene, e.key, e.scancode, e.flag)
+		case EventType.KeyReleased:
+			SceneInvokeKeyReleased(scene, e.key, e.scancode)
+		case EventType.MouseMoved:
+			SceneInvokeMouseMoved(scene)
+		case EventType.MousePressed:
+			SceneInvokeMousePressed(scene)
+		case EventType.MouseReleased:
+			SceneInvokeMouseReleased(scene)
+		case EventType.MouseFocus:
+			SceneInvokeMouseFocus(scene)
+		case EventType.WheelMoved:
+			SceneInvokeWheelMoved(scene)
+		case EventType.JoystickPressed:
+			SceneInvokeJoystickPressed(scene)
+		case EventType.JoystickReleased:
+			SceneInvokeJoystickReleased(scene)
+		case EventType.JoystickAxis:
+			SceneInvokeJoystickAxis(scene)
+		case EventType.JoystickHat:
+			SceneInvokeJoystickHat(scene)
+		case EventType.JoystickGamepadPressed:
+			SceneInvokeJoystickGamepadPressed(scene)
+		case EventType.JoystickGamepadReleased:
+			SceneInvokeJoystickGamepadReleased(scene)
+		case EventType.JoystickGamepadAxis:
+			SceneInvokeJoystickGamepadAxis(scene)
+		case EventType.JoystickAdded:
+			SceneInvokeJoystickAdded(scene)
+		case EventType.JoystickRemoved:
+			SceneInvokeJoystickRemoved(scene)
+		case EventType.TouchMoved:
+			SceneInvokeTouchMoved(scene)
+		case EventType.TouchPressed:
+			SceneInvokeTouchPressed(scene)
+		case EventType.TouchReleased:
+			SceneInvokeTouchReleased(scene)
+		case EventType.TextEditing:
+			SceneInvokeTextEditing(scene)
+		case EventType.TextInput:
+			SceneInvokeTextInput(scene)
+		case EventType.WindowFocus:
+			SceneInvokeWindowFocus(scene)
+		case EventType.WindowVisible:
+			SceneInvokeWindowVisible(scene)
+		case EventType.WindowResize:
+			SceneInvokeWindowResize(scene)
+		case EventType.DirectoryDropped:
+			SceneInvokeDirectoryDropped(scene)
+		case EventType.FileDropped:
+			SceneInvokeFileDropped(scene)
+		case EventType.LowMemory:
+			SceneInvokeLowMemory(scene)
+		case EventType.Quit:
+			SceneInvokeQuit(scene)
+			EventQuit()
+		case EventType.Unknow:
 		}
 
 		list_pop_head(eq.list)
 	}
-
-	eq_Destroy(eq)
 }
 
 eq_Destroy :: proc (eq: ^EventQueue)
@@ -190,32 +165,50 @@ eq_Handle :: proc (eq: ^EventQueue)
 {
 	using WrapEventType
 
+	ed: EventData
+
 	switch eq.event_type
 	{
 	case WRAP_KEY:
-		key := cast(KeyConstant)eq.enum1
-		code := cast(Scancode)eq.enum2
-		repeat := eq.bool
-		down_or_up := eq.down_or_up
-		if down_or_up {
-			eq_KeyPressed(eq, key, code, repeat)
+		if eq.down_or_up {
+			ed.type = EventType.KeyPressed
+			ed.key = cast(KeyConstant)eq.enum1
+			ed.scancode = cast(Scancode)eq.enum2
+			ed.flag = eq.bool
+	
 		} else {
-			eq_KeyReleased(eq, key, code)
+			ed.type = EventType.KeyReleased
+			ed.key = cast(KeyConstant)eq.enum1
+			ed.scancode = cast(Scancode)eq.enum2
 		}
 	case WRAP_MOUSE_BUTTON:
-		/*x := cast(f32)eq.bool
-		y := cast(f32)eq.bool
-		idx := cast(i32)eq.bool
-		touch := cast(bool)eq.bool
-		down_or_up := cast(bool)eq.down_or_up
-		if down_or_up {
-			eq_MousePressed(eq, x, y, idx, touch)
+		if eq.down_or_up {
+			ed.type = EventType.MousePressed
+			ed.fx = eq.float4.(Vector4f).x
+			ed.fy = eq.float4.(Vector4f).y
+			ed.idx = eq.idx
+			ed.flag = eq.bool
 		} else {
-			eq_MouseReleased(eq, x, y, idx, touch)
-		}*/
+			ed.type = EventType.MouseReleased
+			ed.fx = eq.float4.(Vector4f).x
+			ed.fy = eq.float4.(Vector4f).y
+			ed.idx = eq.idx
+			ed.flag = eq.bool
+		}
 	case WRAP_MOUSE_MOTION:
+		ed.type = EventType.MouseMoved
+		ed.fx = eq.float4.(Vector4f).x
+		ed.fy = eq.float4.(Vector4f).y
+		ed.fz = eq.float4.(Vector4f).z
+		ed.fw = eq.float4.(Vector4f).w
+		ed.flag = eq.bool
 	case WRAP_MOUSE_WHEEL:
-
+		eq.scroll_x = eq.int4.(Vector4i).x
+		eq.scroll_y = eq.int4.(Vector4i).y
+		ed.type = EventType.MouseMoved
+		ed.idx = eq.int4.(Vector4i).x
+		ed.idy = eq.int4.(Vector4i).y
+		ed.flag = eq.bool
 	case WRAP_TOUCH_MOVED:
 	case WRAP_TOUCH_PRESSED:
 	case WRAP_TOUCH_RELEASED:
@@ -240,10 +233,11 @@ eq_Handle :: proc (eq: ^EventQueue)
 
 	case WRAP_LOWMEMORY:
 	case WRAP_QUIT:
-		eq_Quit(eq)
+		ed.type = EventType.Quit
 	case WRAP_UNKNOW:
 	}
 
+	list_insert(eq.list, ed)
 }
 
 eq_PollOrWait :: proc (eq: ^EventQueue, poll_or_wait: bool) -> bool
@@ -252,7 +246,7 @@ eq_PollOrWait :: proc (eq: ^EventQueue, poll_or_wait: bool) -> bool
 	out_event_type, out_idx, out_enum1, out_enum2: i32
 	out_string: WrapString
 	out_int4: Int4
-	out_float4: Float4
+	out_float4: Float4 
 	out_float_value: f32 
 	out_joystick: Joystick
 	out_str: WrapString
@@ -296,19 +290,14 @@ eq_PollOrWait :: proc (eq: ^EventQueue, poll_or_wait: bool) -> bool
 
 	eq.event_type = cast(WrapEventType)out_event_type
 
-	eq.idx = cast(i32)out_idx
-	eq.enum1 = cast(i32)out_enum1
-	eq.enum2 = cast(i32)out_enum2
-
-	eq.str = cast(WrapString)out_str
-
-	eq.int4 = cast(Int4)out_int4
-
-	eq.float4 = cast(Float4)out_float4
-
-	eq.float_value = cast(f32)out_float_value
-
-	eq.joystick = cast(Joystick)out_joystick
+	eq.idx = out_idx
+	eq.enum1 = out_enum1
+	eq.enum2 = out_enum2
+	eq.str = out_str
+	eq.int4 = out_int4
+	eq.float4 = out_float4
+	eq.float_value = out_float_value
+	eq.joystick = out_joystick
 
 	if eq.has_event {
 		eq_Handle(eq)
@@ -320,31 +309,25 @@ eq_PollOrWait :: proc (eq: ^EventQueue, poll_or_wait: bool) -> bool
 newEventQueue :: proc () -> ^EventQueue
 {
 	eq: ^EventQueue = new(EventQueue)
-	eq.list = new(LinkedList)
+	eq.list = new(LinkedList(EventData))
 	return eq
 }
 
 EventGetScrollValue :: proc () -> (i32, i32)
 {
-	return eq_getScrollValue(eq_ptr)
+	return eq_GetScrollValue(eq_ptr)
 }
 
-EventHandleScene :: proc (scene: Scene)
+EventHandleScene :: proc (scene: ^Scene)
 {
 	eq_HandleScene(eq_ptr, scene)
 }
 
-EventPoll :: proc () -> bool
+EventPoll :: proc ()
 {
 	eq_ptr = newEventQueue()
 
-	status: bool = true
-
-	for status {
-		status = eq_PollOrWait(eq_ptr, true)
-	}
-
-	return status
+	for eq_PollOrWait(eq_ptr, true) {}
 }
 
 EventWait :: proc ()

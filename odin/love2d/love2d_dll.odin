@@ -6,6 +6,7 @@ when ODIN_OS == .Linux do foreign import wrap_love_dll "love.so"
 
 Object :: distinct rawptr
 RandomGenerator :: distinct rawptr
+Joystick :: distinct rawptr
 
 Quad :: struct
 {
@@ -14,13 +15,6 @@ Quad :: struct
 	retain: proc (rawptr),
 
 	viewport: struct { x, y, w, h: c.double },
-}
-
-Joystick :: struct
-{
-	ptr: ^Joystick,
-	release: proc (rawptr),
-	retain: proc (rawptr),
 }
 
 ImageData :: struct
@@ -124,7 +118,7 @@ foreign wrap_love_dll
 	graphics_present :: proc() ---
 	graphics_print :: proc(
 		coloredStringListStr: ^cstring,
-		coloredStringListColor: ^Color,
+		coloredStringListColor: ^Float4,
 		coloredStringListLength: c.int,
 		x, y, angle: c.float,
 		sx, sy, ox, oy, kx, ky: c.float
@@ -221,7 +215,7 @@ foreign wrap_love_dll
 	) ---
 	windows_showMessageBox_list :: proc (
 		title, message: cstring,
-		buttons: ^pchar,
+		buttons: ^cstring,
 		buttonsLength, enterButtonIndex, escapebuttonIndex, type: c.int,
 		attachToWindow: bool4,
 		out_index_returned: ^c.int
@@ -252,30 +246,30 @@ foreign wrap_love_dll
 	event_open_love_event :: proc () -> bool4 ---
 	event_poll :: proc (
 		out_hasEvent: ^bool4,
-		out_event_type: ^c.int,
+		out_event_type: ^i32,
 		out_down_or_up: ^bool4,
 		out_bool: ^bool4,
 		out_idx: ^c.int,
-		out_enum1_type: ^c.int,
-		out_enum2_type: ^c.int,
+		out_enum1_type: ^i32,
+		out_enum2_type: ^i32,
 		out_str: ^WrapString,
 		out_int4: ^Int4,
 		out_float4: ^Float4,
-		out_float_value: ^c.float,
+		out_float_value: ^f32,
 		out_joystick: ^Joystick
 	) ---
 	event_wait :: proc (
 		out_hasEvent: ^bool4,
-		out_event_type: ^c.int,
+		out_event_type: ^i32,
 		out_down_or_up: ^bool4,
 		out_bool: ^bool4,
-		out_idx: ^c.int,
-		out_enum1_type: ^c.int,
-		out_enum2_type: ^c.int,
+		out_idx: ^i32,
+		out_enum1_type: ^i32,
+		out_enum2_type: ^i32,
 		out_str: ^WrapString,
 		out_int4: ^Int4,
 		out_float4: ^Float4,
-		out_float_value: ^c.float,
+		out_float_value: ^f32,
 		out_joystick: ^Joystick
 	) ---
 

@@ -2,55 +2,48 @@ package love2d
 
 import "core:c"
 
-//Float4 :: union { Color, Vector4 }
-Float4 :: struct #raw_union { Color, Vector4 }
-
 bool4 :: i32
 
-pchar :: ^u8
-
-Int2 :: struct
+Color :: struct ($T: typeid)
 {
-        x, y: c.int
+	r, g, b, a: T,
 }
 
-Int4 :: struct
+Colorf :: Color(f32)
+Colori :: Color(i32)
+
+Vector4 :: struct ($T: typeid)
 {
-        union {
-            struct { x, y, z, w: c.int },
-            struct { r, g, b, a: c.int },
-        }
+	x, y, z, w: T,
 }
 
-Float2 :: struct
+Vector4f :: Vector4(f32)
+Vector4i :: Vector4(i32)
+
+Float4 :: union #no_nil { Vector4f, Colorf }
+Int4 :: union #no_nil { Vector4i, Colori }
+
+Vector2 :: struct ($T: typeid)
 {
-        union {
-            struct { x, y: c.float }
-        }
+	x, y: T,
 }
 
-Float3 :: struct
-{
-        union {
-            struct { x, y, z: c.float }
-        }
-}
+Vector2f :: Vector2(f32)
+Vector2i :: Vector2(i32)
 
-Pixel :: union
+Float2 :: Vector2f
+Int2 :: Vector2i
+
+Point :: Vector2f
+
+Pixel :: struct #raw_union
 {
-	//rgba8: [4]c.uint8_t,
-	[4]c.uint8_t,
-	//rgba16: [4]c.uint16_t,
-	[4]c.uint16_t,
-	//rgba16f: [4]c.float16,
-	//[4]c.float16,
-	[4]f16,
-	//rgba32f: [4]c.float,
-	[4]c.float,
-	//packed16: c.uint16,
-	c.uint16_t,
-	//packed32: c.uint32,
-	c.uint32_t,
+	rgba8: [4]u8,
+	rgba16: [4]u16,
+	rgba16f: [4]f16,
+	rgba32f: [4]f32,
+	packed16: u16,
+	packed32: u32,
 }
 
 WrapString :: struct
@@ -67,19 +60,14 @@ WrapSequenceString :: struct
 ColoredString :: struct
 {
 	text: cstring,
-	color: Color,
+	color: Colorf,
 }
 
 ColoredStringArray :: struct
 {
 	text: []cstring,
-	color: []Color,
+	color: []Colorf,
 	length: i32,
-}
-
-Point :: struct
-{
-	x, y: f32,
 }
 
 Tuple :: struct($First, $Second: typeid)
@@ -88,31 +76,28 @@ Tuple :: struct($First, $Second: typeid)
 	second: Second,
 }
 
-Color :: struct #packed
+tuple_unpack :: proc (tuple: Tuple($First, $Second)) -> (First, Second)
 {
-	r, g, b, a: f32,
+	return tuple.first, tuple.second
 }
 
-Vector4 :: struct
+Node :: struct ($T: typeid)
 {
-	x, y, z, w: f32,
+	data: T,
+	next: ^Node(T),
 }
 
-Node :: struct
+LinkedList :: struct ($T: typeid)
 {
-	data: EventData,
-	next: ^Node,
+	head: ^Node(T),
+	tail: ^Node(T),
+	count: uint,
 }
 
-LinkedList :: struct
+list_insert :: proc (list: ^LinkedList($T), data: T) -> ^Node(T)
 {
-	head: ^Node,
-	tail: ^Node,
-	count: int,
-}
-
-list_insert :: proc (list: ^LinkedList, node: ^Node) -> ^Node
-{
+	node := new(Node(T))
+	node.data = data
 	if 0 < list.count {
 		list.tail.next = node
 		list.tail= list.tail.next
@@ -125,7 +110,7 @@ list_insert :: proc (list: ^LinkedList, node: ^Node) -> ^Node
 	return list.tail
 }
 
-list_pop_head :: proc (list: ^LinkedList) -> ^Node
+list_pop_head :: proc (list: ^LinkedList($T)) -> ^Node(T)
 {
 	list.head = list.head.next
 	if list.count > 0 {
@@ -134,7 +119,7 @@ list_pop_head :: proc (list: ^LinkedList) -> ^Node
 	return list.head
 }
 
-list_pop_tail :: proc (list: ^LinkedList) -> ^Node
+list_pop_tail :: proc (list: ^LinkedList($T)) -> ^Node(T)
 {
 	counter := 0
 	node := list.head
@@ -154,7 +139,7 @@ newColoredString_default :: proc (text: cstring) -> ColoredString
 	return ColoredString{text = text, color = {1.00, 1.00, 1.00, 1.00}}
 }
 
-newColoredString_color :: proc (text: cstring, color: Color) -> ColoredString
+newColoredString_color :: proc (text: cstring, color: Colorf) -> ColoredString
 {
 	return ColoredString{text = text, color = color}
 }
@@ -171,7 +156,7 @@ newColoredStringArray_default :: proc (text: cstring) -> ColoredStringArray
 	return ColoredStringArray{text = {text}, color = {{1.00, 1.00, 1.00, 1.00}}}
 }
 
-newColoredStringArray_array :: proc (text: []cstring, color: []Color) -> ColoredStringArray
+newColoredStringArray_array :: proc (text: []cstring, color: []Colorf) -> ColoredStringArray
 {
 	return ColoredStringArray{text = text, color = color}
 }
