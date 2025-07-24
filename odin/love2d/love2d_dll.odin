@@ -1,122 +1,58 @@
-package love2d_dll
+package love2d
 
 import "core:c"
-import "core:fmt"
 
 when ODIN_OS == .Linux do foreign import wrap_love_dll "love.so"
 
-Tuple :: struct($First, $Second: typeid) { first: First, second: Second }
+Object :: distinct rawptr
+RandomGenerator :: distinct rawptr
 
-Color :: struct #packed { r, g, b, a: c.float }
-
-Vector4 :: union {
-        struct #packed { x, y, z, w: c.float },
-        struct #packed { r, g, b, a: c.float },
-}
-
-bool4 :: c.int
-
-pchar :: ^c.char
-
-Int2 :: struct {
-        x, y: c.int
-}
-
-Int4 :: struct {
-        union {
-            struct { x, y, z, w: c.int },
-            struct { r, g, b, a: c.int },
-        }
-}
-
-Float2 :: struct {
-        union {
-            struct { x, y: c.float }
-        }
-}
-
-Float3 :: struct {
-        union {
-            struct { x, y, z: c.float }
-        }
-}
-
-Float4 :: struct #packed {
-        union {
-            struct #packed { x, y, z, w: c.float },
-            struct #packed { r, g, b, a: c.float },
-        }
-}
-
-Pixel :: union {
-	//rgba8: [4]c.uint8_t,
-	[4]c.uint8_t,
-	//rgba16: [4]c.uint16_t,
-	[4]c.uint16_t,
-	//rgba16f: [4]c.float16,
-	//[4]c.float16,
-	[4]f16,
-	//rgba32f: [4]c.float,
-	[4]c.float,
-	//packed16: c.uint16,
-	c.uint16_t,
-	//packed32: c.uint32,
-	c.uint32_t,
-}
-
-WrapString :: struct { data: ^cstring }
-
-WrapSequenceString :: struct { length: c.int, sequence: ^pchar }
-
-ColoredString :: struct { text: cstring, color: [4]c.float}
-
-ColoredStringArray :: struct { text: []cstring, color: [][4]c.float, length: c.int}
-
-Object :: struct ($T: typeid) { 
-	ptr: ^T,
-	release: proc (rawptr),
-	retain: proc (rawptr),
-}
-
-pObject :: ^Object
-
-Quad :: struct {
+Quad :: struct
+{
 	ptr: ^Quad,
 	release: proc (rawptr),
 	retain: proc (rawptr),
 
 	viewport: struct { x, y, w, h: c.double },
 }
-pQuad :: ^Quad
 
-RandomGenerator :: struct {
-	ptr: ^RandomGenerator,
-	release: proc (rawptr),
-	retain: proc (rawptr),
-}
-pRandomGenerator :: ^RandomGenerator
-
-Joystick :: struct {
+Joystick :: struct
+{
 	ptr: ^Joystick,
 	release: proc (rawptr),
 	retain: proc (rawptr),
 }
-pJoystick :: ^Joystick
 
-ImageData :: struct {
+ImageData :: struct
+{
 	ptr: ^ImageData,
 	release: proc (rawptr),
 	retain: proc (rawptr),
 
 	pixel: Pixel,
 }
-pImageData :: ^ImageData
 
 @(link_prefix="wrap_love_dll_")
-foreign wrap_love_dll {
-	common_getVersion :: proc(out_str: ^WrapString) ---
-	common_getVersionCodeName :: proc(out_str: ^WrapString) ---
-	last_error :: proc(out_errormsg: ^WrapString) ---
+foreign wrap_love_dll
+{
+	common_getVersion :: proc (out_str: ^WrapString) ---
+	common_getVersionCodeName :: proc (out_str: ^WrapString) ---
+	last_error :: proc (out_errormsg: ^WrapString) ---
+
+	font_open_love_font :: proc () -> bool4  ---
+
+	filesystem_open_love_filesystem :: proc () -> bool4 --- 
+	filesystem_init :: proc (arg0: cstring) -> bool4 ---
+
+	keyboard_open_love_keyboard :: proc () -> bool4 ---
+	joystick_open_love_joystick :: proc () -> bool4 ---
+	touch_open_love_touch :: proc () -> bool4 ---
+	sound_luaopen_love_sound :: proc () -> bool4 ---
+
+	audio_open_love_audio :: proc () -> bool4 ---
+	image_open_love_image :: proc () -> bool4 ---
+	video_open_love_video :: proc () -> bool4 ---
+	system_open_love_system_module :: proc () -> bool4 ---
 
 	timer_open_timer :: proc () -> bool4 ---
 	timer_step :: proc () ---
@@ -125,14 +61,6 @@ foreign wrap_love_dll {
 	timer_getAverageDelta :: proc (out_averageDelta: ^c.float) ---
 	timer_sleep :: proc (t: c.float) ---
 	timer_getTime :: proc (out_time: ^c.double) ---
-
-	retain_obj :: proc(ptr: rawptr) ---
-	release_obj :: proc(ptr: rawptr) ---
-	delete :: proc(ptr: rawptr) ---
-	delete_array :: proc(ptr: rawptr) ---
-
-	delete_WrapString :: proc(ws: ^WrapString) ---
-	delete_WrapSequenceString :: proc(wss: ^WrapSequenceString) ---
 
 	open_love_math :: proc() -> bool4 ---
 	//Float2* pointsList, int pointsList_lenght, float **out_triArray, int *out_triCount
@@ -151,23 +79,19 @@ foreign wrap_love_dll {
 	math_noise_3 :: proc(x, y, z: c.float, out_result: ^c.float) ---
 	math_noise_4 :: proc(x, y, z, w: c.float, out_result: ^c.float) ---
 
-	math_newRandomGenerator :: proc (out_rg: ^pRandomGenerator) -> bool4 ---
-	type_RandomGenerator_random :: proc (rg: ^RandomGenerator, out_result: ^c.double) ---
-	type_RandomGenerator_randomNormal :: proc (
-		rg: ^RandomGenerator,
-		stddve, mean: c.double,
-		out_result: ^c.double
-	) ---
-	type_RandomGenerator_setSeed :: proc (rg: ^RandomGenerator, low, high: c.uint) -> bool4 ---
-	type_RandomGenerator_getSeed :: proc (rg: ^RandomGenerator, out_low, out_high: ^c.uint) ---
-	type_RandomGenerator_setState :: proc (rg: ^RandomGenerator, state: ^cstring) -> bool4 ---
-	type_RandomGenerator_getState :: proc (rg: ^RandomGenerator, out_str: ^WrapString) ---
+	math_newRandomGenerator :: proc (out_rg: ^RandomGenerator) -> bool4 ---
+	type_RandomGenerator_random :: proc (rg: RandomGenerator, out_result: ^c.double) ---
+	type_RandomGenerator_randomNormal :: proc (rg: RandomGenerator, stddve, mean: f64, out_result: ^f64) ---
+	type_RandomGenerator_setSeed  :: proc (rg: RandomGenerator, low, high: c.uint) -> bool4 ---
+	type_RandomGenerator_getSeed  :: proc (rg: RandomGenerator, out_low, out_high: ^c.uint) ---
+	type_RandomGenerator_setState :: proc (rg: RandomGenerator, state: ^cstring) -> bool4 ---
+	type_RandomGenerator_getState :: proc (rg: RandomGenerator, out_str: ^WrapString) ---
 
 	graphics_open_love_graphics :: proc() -> bool4 ---
 	//ImageDataBase **imageDataList, bool4* compressedTypeList, int imageDataListLength, bool4 flagMipmaps, bool4 flagLinear, love::graphics::Image** out_image
 	graphics_newImage_data :: proc() -> bool4 ---
 	//double x, double y, double w, double h, double sw, double sh, Quad** out_quad
-	graphics_newQuad :: proc(x, y, w, h, sw, sh: c.double, out_quad: ^pQuad) ---
+	graphics_newQuad :: proc(x, y, w, h, sw, sh: c.double, out_quad: ^^Quad) ---
 	//Rasterizer *rasterizer, love::graphics::Font** out_font
 	graphics_newFont :: proc() -> bool4 ---
 	//Texture *texture, int maxSprites, int usage_type, love::graphics::SpriteBatch** out_spriteBatch
@@ -199,10 +123,8 @@ foreign wrap_love_dll {
 	) -> bool4 ---
 	graphics_present :: proc() ---
 	graphics_print :: proc(
-		coloredStringListStr: []cstring,
-		//coloredStringListColor: []Vector4,
-		//coloredStringListColor: []Color,
-		coloredStringListColor: []Float4,
+		coloredStringListStr: ^cstring,
+		coloredStringListColor: ^Color,
 		coloredStringListLength: c.int,
 		x, y, angle: c.float,
 		sx, sy, ox, oy, kx, ky: c.float
@@ -276,7 +198,7 @@ foreign wrap_love_dll {
 	windows_getPosition :: proc (out_x, out_y, out_displayindex: ^c.int) ---
 
 	windows_setIcon :: proc (i: ^ImageData, out_success: ^bool4) ---
-	windows_getIcon :: proc (out_imagedata: ^pImageData) ---
+	windows_getIcon :: proc (out_imagedata: ^^ImageData) ---
 
 	windows_setDisplaySleepEnabled :: proc (enable: bool4) ---
 	windows_isDisplaySleepEnabled :: proc (out_enable: ^bool4) ---
@@ -308,7 +230,6 @@ foreign wrap_love_dll {
 	windows_windowToPixelCoords :: proc (out_x, out_y: ^c.double) ---
 	windows_pixelToWindowCoords :: proc (x, y: ^c.double) ---
 
-
 	open_love_mouse :: proc () -> bool4 ---
 	//mouse_getSystemCursor :: proc (int sysctype, mouse::Cursor** out_cursor) -> bool4 ---
 	//mouse_setCursor :: proc (mouse::Cursor *cursor) ---
@@ -327,7 +248,6 @@ foreign wrap_love_dll {
 	mouse_isGrabbed :: proc (out_result: ^bool4) ---
 	mouse_setRelativeMode :: proc (enable: bool4, out_result: ^bool4) ---
 	mouse_getRelativeMode :: proc (out_result: ^bool4) ---
-
 
 	event_open_love_event :: proc () -> bool4 ---
 	event_poll :: proc (
@@ -358,52 +278,30 @@ foreign wrap_love_dll {
 		out_float_value: ^c.float,
 		out_joystick: ^Joystick
 	) ---
+
+	delete_WrapString :: proc(ws: ^WrapString) ---
+	delete_WrapSequenceString :: proc(wss: ^WrapSequenceString) ---
+
+	delete :: proc (ptr: rawptr) ---
+	delete_array :: proc (ptr: rawptr) ---
+
+	retain_obj :: proc (ptr: rawptr) ---
+	release_obj :: proc (ptr: rawptr) ---
 }
 
-retain :: proc (ptr: rawptr) {
+retain :: proc (ptr: rawptr)
+{
 	retain_obj(ptr)
 }
 
-release :: proc (ptr: rawptr) {
+release :: proc (ptr: rawptr)
+{
 	release_obj(ptr)
 }
 
-newColoredString_default :: proc (text: cstring) -> ColoredString {
-	return ColoredString{text = text, color = {1.00, 1.00, 1.00, 1.00}}
-}
-
-newColoredString_color :: proc (text: cstring, color: [4]c.float) -> ColoredString {
-	return ColoredString{text = text, color = color}
-}
-
-newColoredString_rgba :: proc (text: cstring, r, g, b, a: c.float) -> ColoredString {
-	return ColoredString{text = text, color = {r, g, b, a}}
-}
-
-newColoredString :: proc {newColoredString_default, newColoredString_color, newColoredString_rgba}
-
-newColoredStringArray_default :: proc (text: cstring) -> ColoredStringArray {
-	return ColoredStringArray{text = {text}, color = {{1.00, 1.00, 1.00, 1.00}}}
-}
-
-newColoredStringArray_array :: proc (text: []cstring, color: [][4]c.float) -> ColoredStringArray {
-	return ColoredStringArray{text = text, color = color}
-}
-
-newColoredStringArray :: proc {newColoredStringArray_default, newColoredStringArray_array}
-
-
-newObject :: proc ($T: typeid, ptr: ^T) -> ^T {
-	if nil == ptr { return nil }
-
-	obj := new(T)
-	obj^ = { ptr = ptr, retain = retain, release = release }
-
-	return obj
-}
-
-newRandomGenerator :: proc () -> ^RandomGenerator {
-	out_rg: pRandomGenerator = nil
+newRandomGenerator :: proc () -> RandomGenerator
+{
+	out_rg: RandomGenerator = nil
 	math_newRandomGenerator(&out_rg)
-	return newObject(RandomGenerator, out_rg)
+	return out_rg
 }
