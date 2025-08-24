@@ -1,3 +1,0 @@
-vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition) {
-	return clipSpaceFromLocal * localPosition;
-}
